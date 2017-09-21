@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <title>Leap JavaScript Sample</title>
+    <script src="http://js.leapmotion.com/leap-0.6.3.min.js"></script>
+	<style>
+		#finger {
+			width: 10%;
+			height: auto;
+			visibility: hidden; 
+		}
+		#image {
+			position: absolute;
+		}
+	</style>
+    <script>
+		// Setup Leap loop with frame callback function
+		window.onload = () => {
+			var goButton = document.getElementById('goButton');
+			goButton.onclick = () => {
+				
+				var timeInput = document.getElementById('timeInput');
+				var timeLimit = timeInput.value;
+				var mainDiv = document.getElementById('main');
+				mainDiv.removeChild(goButton);
+				mainDiv.removeChild(timeInput);
+				var controllerOptions = {};
+				var data = [];
+				//var times = [];
+				var fingerImg = document.getElementById("finger");
+				fingerImg.style.visibility = 'visible';
+				var fin = false;
+				setTimeout(() => {
+					fin = true;
+					var csvContent = "data:text/csv;charset=utf-8,";
+					data.forEach((d, i) => {
+						csvContent +=  (d.time / 1e3) + ',' + d.position + '\n';
+					});
+					var encodedUri = encodeURI(csvContent);
+					var link = document.createElement("a");
+					link.setAttribute("href", encodedUri);
+					link.setAttribute("download", "data.csv");
+					document.body.appendChild(link); // Required for FF
+
+					link.click(); 
+					document.body.removeChild(link);
+					mainDiv.removeChild(fingerImg);
+				}, timeLimit * 1000);
+				var startTime = Date.now();
+				Leap.loop(controllerOptions, function(frame) {
+				
+				
+					if(!fin){
+						if (frame.pointables.length > 0) {
+							var finger = frame.pointables[1];
+							data.push({ position: finger.tipPosition, time: Date.now() - startTime });
+							fingerImg.style['margin-left'] = (3*(150 + finger.tipPosition[0])) + 'px';
+							//pointableString += "Tip position: " + pointable.tipPosition.join('\t') + " mm<br />";
+							//pointableString += "Tip velocity: " + pointable.tipVelocity.join('\t') + " mm/s<br /><br />";
+					
+						}
+					}
+	
+			// And so on...
+			})
+		}
+	}
+		
+	</script>
+  </head>
+  <body>
+    <h1>Leap JavaScript Sample</h1>
+    <div id="main">
+		<input type="number" id="timeInput" />
+		<button id="goButton" >Go</button>
+	  <img id="finger" src="http://www.clipartkid.com/images/6/pointer-finger-clip-art-at-clker-com-vector-clip-art-online-royalty-TDolLT-clipart.png" />
+      
+    </div>
+  </body>
+  
+  
+
+</html>
